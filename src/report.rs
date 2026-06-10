@@ -226,7 +226,7 @@ impl Report {
         }
         out.push_str("## Findings\n\n");
         let mut sorted = self.findings.clone();
-        sorted.sort_by(|a, b| b.severity.cmp(&a.severity));
+        sorted.sort_by_key(|f| std::cmp::Reverse(f.severity));
         for f in &sorted {
             out.push_str(&format!(
                 "- **[{}]** {} — {}{}\n",
@@ -275,7 +275,7 @@ impl Report {
         }
 
         let mut sorted = self.findings.clone();
-        sorted.sort_by(|a, b| b.severity.cmp(&a.severity));
+        sorted.sort_by_key(|f| std::cmp::Reverse(f.severity));
         for f in &sorted {
             let (sev_color, sev_reset) = if color {
                 (f.severity.color(), "\x1b[0m")

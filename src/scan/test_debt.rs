@@ -51,10 +51,8 @@ pub fn analyze(files: &[SourceFile]) -> (TestDebtStats, Vec<Finding>) {
                         stats.unwrap_count += 1;
                     }
                 }
-                Some(Lang::Js) => {
-                    if !is_test && trimmed.contains("console.log(") {
-                        stats.console_log_count += 1;
-                    }
+                Some(Lang::Js) if !is_test && trimmed.contains("console.log(") => {
+                    stats.console_log_count += 1;
                 }
                 _ => {}
             }
