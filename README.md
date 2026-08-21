@@ -88,14 +88,17 @@ A probe of a live URL is a single GET, so it finishes in network RTT plus about 
 ## Quickstart
 
 ```bash
-# build
+# install from crates.io (https://crates.io/crates/aegis-audit)
+cargo install aegis-audit          # installs the `aegis` binary
+
+# ...or build from source
 cargo build --release
 
 # audit a codebase
-./target/release/aegis scan ./path/to/project
+aegis scan ./path/to/project
 
 # audit a live endpoint
-./target/release/aegis probe https://your-app.example
+aegis probe https://your-app.example
 
 # machine-readable output + CI gate (exit 1 below threshold)
 aegis scan . --format json --fail-under 80
