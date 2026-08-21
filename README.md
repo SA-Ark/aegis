@@ -4,11 +4,9 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Rust](https://img.shields.io/badge/rust-stable-orange.svg)
 
-**Production readiness audit CLI — grade a codebase or a live endpoint the way a rescue engineer does on day one.**
+**A production-readiness audit CLI. Point it at a codebase or a live endpoint and it grades what would bite you first in production.**
 
-Aegis answers one question fast: *if this app shipped to production tonight, what bites you first?* It runs the
-checks that actually page people at 3 a.m. — leaked credentials, unpinned supply chains, untested critical paths,
-rootful containers, naked HTTP headers — and compresses them into a single defensible readiness score.
+The question Aegis answers: if this app shipped tonight, what's the thing that pages someone at 3 a.m.? Leaked credentials, unpinned dependencies, untested critical paths, rootful containers, missing security headers. It runs those checks and rolls them into one readiness score you can defend in a review.
 
 ```
 AEGIS — production readiness report
@@ -29,10 +27,7 @@ target: ./acme-api
 
 ## Why
 
-Most "audit" tooling answers a narrow question (just CVEs, just lint, just headers). A production rescue starts
-wider: *what categories of risk exist, how bad is each, and what do I fix first?* Aegis encodes that triage as a
-tool — five weighted categories, severity-driven scoring, and a remediation line on every finding. It is the
-first-hour instrument of a production-readiness consultation, distilled into a binary.
+Most audit tools answer one narrow question — just CVEs, or just lint, or just headers. But a real production rescue starts wider than that. What *categories* of risk exist here, how bad is each, and what do I fix first? Aegis bakes that triage into a tool: five weighted categories, severity-driven scoring, and a remediation line on every finding. It's the first hour of a readiness review, minus the consultant.
 
 ## Architecture
 
@@ -76,9 +71,7 @@ first-hour instrument of a production-readiness consultation, distilled into a b
 | **CI / Automation** (10%) | Presence of a CI pipeline (GitHub Actions / GitLab / Jenkins / CircleCI) |
 | **Transport & Headers** (probe) | HTTPS enforcement, HSTS, CSP, nosniff, clickjacking protection, Referrer-Policy, cookie `Secure`/`HttpOnly`, server version disclosure, 5xx status, TTFB |
 
-Scoring: each category starts at 100; findings deduct by severity (Critical −40, High −15, Medium −6, Low −2,
-Info −0; floor 0). The overall score is the weighted mean — so a single leaked credential visibly tanks the
-grade, exactly as it should.
+Every category starts at 100 and findings deduct by severity: Critical −40, High −15, Medium −6, Low −2, Info −0, floored at 0. The overall score is the weighted mean, so a single leaked credential visibly tanks the grade — which is exactly what you want it to do.
 
 ## Benchmarks
 
@@ -90,7 +83,7 @@ Measured with `/usr/bin/time` on an Intel i7-13700H (20 threads), warm page cach
 | 130-source-file TypeScript app | ~350 | 0.3 s | 6 MB |
 | This repository (self-scan) | ~25 | 0.06 s | 5 MB |
 
-Single GET probe of a live URL completes in network RTT + ~1 ms of analysis.
+A probe of a live URL is a single GET, so it finishes in network RTT plus about a millisecond of analysis.
 
 ## Quickstart
 
@@ -120,19 +113,15 @@ Exit codes: `0` pass, `1` score below `--fail-under`, `2` execution error.
 
 ## Design notes
 
-- **Zero network on `scan`.** Everything is judged from the worktree; safe to run on client code under NDA.
-- **Read-only `probe`.** One GET, no fuzzing, no auth — safe against production.
-- **Placeholder-aware secret detection.** `${VAR}`, `<your-key>`, `process.env...` assignments don't fire;
-  the goal is a report a human acts on, not a wall of false positives.
-- **Heuristics labeled as heuristics.** Test debt is a *risk signal*, not a coverage report — the README of a
-  finding tells you what it measured.
+`scan` never touches the network — everything is judged from the worktree, so it's safe to run on client code under NDA. `probe` is read-only: one GET, no fuzzing, no auth, safe to point at production.
 
-## Limitations (honest ones)
+Secret detection is placeholder-aware. `${VAR}`, `<your-key>`, and `process.env...` assignments don't fire, because the goal is a report someone actually acts on, not a wall of false positives you learn to ignore.
 
-- Secret detection is pattern-based; it will not catch novel token formats (pair with entropy scanners for
-  belt-and-braces).
-- Dependency checks are static — no advisory-database lookups (by design: `scan` never touches the network).
-- Language coverage for test-debt heuristics: Rust, JS/TS, Python.
+And the heuristics are labeled as heuristics. Test debt is a risk signal, not a coverage report — each finding tells you what it actually measured, so you're never guessing what a number means.
+
+## Limitations (the honest ones)
+
+Secret detection is pattern-based, so it won't catch a novel token format — pair it with an entropy scanner if you want belt-and-braces. Dependency checks are static, with no advisory-database lookups; that's deliberate, since `scan` never goes to the network. Test-debt heuristics cover Rust, JS/TS, and Python, and nothing else.
 
 ## License
 
